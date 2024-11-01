@@ -70,7 +70,7 @@ const useStyles = makeStyles({
 const AllCountries = () => {
   const classes = useStyles();
 
-  const { getAllCountries, handleSearchChange, getCountryByName, handleViewAll, countries, filteredCountries, searchQuery, isLoading, error, showSuggestions, filter, setFilter } = useGetApis()
+  const { getAllCountries, handleSearchChange, getCountryByName, handleViewAll, countries, filteredCountries, searchQuery, isLoading, error, showSuggestions } = useGetApis()
 
   const [favorites, setFavorites] = useState([]);
 
