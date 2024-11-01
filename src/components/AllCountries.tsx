@@ -41,8 +41,6 @@ const AllCountries = () => {
     language:'',
     region:''
   })
-  const [language, setLanguage] = useState('');
-  const [languageCode, setLanguageCode] = useState('');
 
   const classes = useStyles();
 
