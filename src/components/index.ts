@@ -1,3 +1,4 @@
 import AllCountries from "./AllCountries"
 import CountryDetails from "./CountryDetails"
-export {AllCountries,CountryDetails} ;
+import FilterModal from "./Filter";
+export {AllCountries,CountryDetails,FilterModal} ;
