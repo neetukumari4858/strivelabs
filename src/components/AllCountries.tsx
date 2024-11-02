@@ -1,13 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Box, Card, Button, CardActions, CardContent, TextField, Typography, List, ListItem, ListItemText, Paper } from '@mui/material';
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Button, Typography } from '@mui/material';
+import { useLocation, useNavigate } from "react-router-dom";
 import { useGetApis } from "../customHook/useGetApis"
 import { useTheme } from '@mui/material/styles';
+import { Search, FilterModal, Favorites, CountryCard } from "./index";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import useAllCountriesStyles from './useAllCountriesStyles';
-import {Search ,FilterModal,Favorites,CountryCard} from "./index";
 
 const AllCountries = () => {
   const { getAllCountries, filter, setFilter, countries = [], isLoading, error } = useGetApis();
@@ -42,13 +42,14 @@ const AllCountries = () => {
   }, [isLoading]);
 
 
-  const updateUrlParams = () => {
+  const updateUrlParams = useCallback(() => {
     const params = new URLSearchParams();
     if (filter.language) params.set("language", filter.language);
     if (filter.region) params.set("region", filter.region);
     params.set("page", String(currentPage));
     navigate({ search: params.toString() }, { replace: true });
-  };
+  }, [filter, currentPage, navigate]);
+
 
   useEffect(() => {
     getAllCountries();
@@ -73,11 +74,11 @@ const AllCountries = () => {
     if (page) {
       setCurrentPage(Number(page));
     }
-  }, [location.search]);
+  }, [location.search, setFilter]);
 
   useEffect(() => {
     updateUrlParams();
-  }, [filter, currentPage]);
+  }, [filter, currentPage, updateUrlParams]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
@@ -92,7 +93,7 @@ const AllCountries = () => {
       </div>
       <div className={classes.contentContainer}>
         <div className={classes.headerItem}>
-          <Search/>
+          <Search />
           <FilterModal />
         </div>
         <div>
@@ -133,20 +134,20 @@ const AllCountries = () => {
                 </div>
                 {
                   matchesSmallScreen && favorites.length > 0 && (
-                    <Favorites favorites={favorites}/>
+                    <Favorites favorites={favorites} />
                   )
                 }
               </div>
               <div className={classes.content}>
                 <div className={classes.listContainer}>
                   {currentCountries.length > 0 && (currentCountries?.map((country: any) => (
-                    <CountryCard name={country.name} capital={country.capital} region={country.region}  domain={country.topLevelDomain} countryItem={country}/>
-                    
+                    <CountryCard name={country.name} capital={country.capital} region={country.region} domain={country.topLevelDomain} countryItem={country} />
+
                   )))}
                 </div>
                 {
                   !matchesSmallScreen && favorites.length > 0 && (
-                    <Favorites favorites={favorites}/>
+                    <Favorites favorites={favorites} />
                   )
                 }
               </div>
