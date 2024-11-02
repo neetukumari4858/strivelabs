@@ -1,12 +1,12 @@
 import { Route, Routes } from "react-router-dom"
-import { AllCountries,CountryDetails } from "../components"
+import { AllCountries, CountryDetails } from "../components"
 
-const  AppRoutes=()=> {
+const AppRoutes = () => {
   return (
     <div>
       <Routes>
-        <Route path="/" element={<AllCountries/>}/>
-        <Route path="/country/:countryName" element={<CountryDetails/>}/>
+        <Route path="/" element={<AllCountries />} />
+        <Route path="/country/:countryName" element={<CountryDetails />} />
       </Routes>
     </div>
   )

@@ -1,31 +1,47 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Typography, Container } from "@mui/material";
-import { useGetApis } from "../utils/useGetApis";
+import { Typography, Card, Container, CardContent } from "@mui/material";
+import { useGetApis } from "../customHook/useGetApis";
+import { makeStyles } from "@mui/styles";
+import { Theme } from '@mui/material/styles';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { makeStyles } from "@mui/styles";
-import globeImg from "../assets/globe.jpg";
+import worldmapImg from "../assets/detailImage.png";
 import Fab from '@mui/material/Fab';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-const useStyles = makeStyles({
 
+const useStyles = makeStyles((theme: Theme) => ({
   detailContainer: {
     display: 'flex',
-    justifyContent: "space-between",
-    margin: '5rem'
+    justifyContent: 'space-between',
+    margin: '5rem',
+    [theme.breakpoints.down('md')]: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      margin: '2rem',
+    },
   },
   header: {
     display: 'flex',
     alignItems: 'center',
-    gap: '2rem'
+    gap: '1rem',
   },
   content: {
     display: 'flex',
-    flexDirection: "column",
-    gap: '1rem'
+    flexDirection: 'column',
+    gap: '1rem',
+    [theme.breakpoints.down('sm')]: {
+      alignItems: 'center',
+      textAlign: 'center',
+    },
   },
-})
+  worldmapImage: {
+    maxWidth: '100%',
+    height: 'auto',
+    marginTop: '2rem',
+  },
+}));
+
 const CountryDetails = () => {
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem('favorites');
@@ -61,50 +77,49 @@ const CountryDetails = () => {
       <div>
         <div className={classes.header}>
           <Fab size="small" color="primary" aria-label="add">
-
             <ArrowBackIcon onClick={backTohome} />
           </Fab>
           <h1>{countryName}</h1>
-          <Fab size="small" aria-label="like" onClick={() => toggleFavorite(countryName)}>
-                  {isFavorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
-                </Fab>
         </div>
         {isLoading ? (
-          <p>Loading...</p> 
+          <p>Loading...</p>
         ) : error ? (
           <p>Error: {error}</p>
         ) : (
           <>
             {countries?.map((countryInfo: any) => (
-              <div key={countryInfo.name} className={classes.content}>
-                <Typography variant="h6">
-                  Country:{countryInfo.name}
-                </Typography>
-
-                <Typography variant="h6" >
-                  Capital: {countryInfo.capital}
-                </Typography>
-                <Typography variant="h6" >
-                  Region :{countryInfo.region}
-                </Typography>
-                <Typography variant="h6" >
-                  Domain :{countryInfo.topLevelDomain}
-                </Typography>
-                
-
-                <Typography variant="h6" >
-                  If you Like while Exploring this Country then Hit the Like Button...
-                </Typography>
-                
-                
-              </div>
+              <Card>
+                <CardContent>
+                  <Container key={countryInfo.name} className={classes.content}>
+                    <Typography variant="h6" sx={{ mt: 1 }}>
+                      Country: {countryInfo.name}
+                    </Typography>
+                    <Typography variant="h6" sx={{ mt: 1 }} >
+                      Capital:  {countryInfo.capital}
+                    </Typography>
+                    <Typography variant="h6" sx={{ mt: 1 }} >
+                      Region : {countryInfo.region}
+                    </Typography>
+                    <Typography variant="h6" sx={{ mt: 1 }} >
+                      Domain : {countryInfo.topLevelDomain}
+                    </Typography>
+                    <Typography variant="h6" sx={{ mt: 1 }} >
+                      Favorites : {<Fab size="small" aria-label="like" onClick={() => toggleFavorite(countryName)}>
+                        {isFavorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+                      </Fab>}
+                    </Typography>
+                    <Typography variant="h6" sx={{ mt: 1 }} >
+                      If you Like while Exploring this Country then Hit the Favorite Button...
+                    </Typography>
+                  </Container>
+                </CardContent>
+              </Card>
             ))}
           </>
         )}
       </div>
-
       <div>
-        <img src={globeImg} alt="globeImg" />
+        <img src={worldmapImg} alt="worldmapimg" className={classes.worldmapImage} />
       </div>
     </Container>
   );

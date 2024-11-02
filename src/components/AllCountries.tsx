@@ -1,78 +1,54 @@
-import { useEffect, useState } from 'react';
-import { Box, Card, CardActions, CardContent, TextField, Typography, List, ListItem, ListItemText, Paper, Container } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { Link } from "react-router-dom";
-import { useGetApis } from "../utils/useGetApis"
-import globeImg from "../assets/globe.jpg";
-import FilterModal from "./Filter"
-const useStyles = makeStyles({
-  flag: {
-    borderRadius: '100%',
-    height: 35,
-    width: 40,
-    backgroundColor: "black"
-  },
-  searchContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: '1rem',
-
-  },
-  suggestions: {
-    width: '100%',
-    maxWidth: 360,
-  },
-  viewAllBtn: {
-    textAlign: 'center',
-    color: 'blue',
-    cursor: 'pointer',
-  },
-
-  globeContainer: {
-    backgroundImage: `url(${globeImg})`,
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    height: 400,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'white',
-    textAlign: 'center',
-    position: 'relative',
-    flexDirection: 'column',
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  contentContainer: {
-    padding: '2rem'
-
-  },
-  headerItem: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    textAlign: 'center',
-    justifyContent: 'space-between',
-  },
-  content:{
-    display:'flex',
-  },
-  listContainer:{
-    display:'flex',
-    flexWrap:'wrap',
-    gap:'2rem',
-  }
-});
+import { useEffect, useState, useCallback } from 'react';
+import { Box, Card, Button, CardActions, CardContent, TextField, Typography, List, ListItem, ListItemText, Paper } from '@mui/material';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useGetApis } from "../customHook/useGetApis"
+import { useTheme } from '@mui/material/styles';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import useAllCountriesStyles from './useAllCountriesStyles';
+import {Search ,FilterModal,Favorites,CountryCard} from "./index";
 
 const AllCountries = () => {
-  const classes = useStyles();
-
-  const { getAllCountries, handleSearchChange, getCountryByName, handleViewAll, countries, filteredCountries, searchQuery, isLoading, error, showSuggestions } = useGetApis()
-
+  const { getAllCountries, filter, setFilter, countries = [], isLoading, error } = useGetApis();
   const [favorites, setFavorites] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const classes = useAllCountriesStyles();
+  const theme = useTheme();
+
+  const itemsPerPage = 20;
+  const currentCountries = Array.isArray(countries) ? countries.slice(0, currentPage * itemsPerPage) : [];
+  const totalPages = Array.isArray(countries) ? Math.ceil(countries.length / itemsPerPage) : 0;
+  const matchesSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const handleScroll = useCallback(() => {
+    if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 50 && !isLoading) {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  }, [isLoading]);
+
+
+  const updateUrlParams = () => {
+    const params = new URLSearchParams();
+    if (filter.language) params.set("language", filter.language);
+    if (filter.region) params.set("region", filter.region);
+    params.set("page", String(currentPage));
+    navigate({ search: params.toString() }, { replace: true });
+  };
 
   useEffect(() => {
     getAllCountries();
@@ -82,6 +58,32 @@ const AllCountries = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const lang = params.get("language");
+    const region = params.get("region");
+    const page = params.get("page");
+
+    if (lang || region) {
+      setFilter({
+        language: lang || "",
+        region: region || ""
+      });
+    }
+    if (page) {
+      setCurrentPage(Number(page));
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    updateUrlParams();
+  }, [filter, currentPage]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
   return (
     <div className={classes.container}>
       <div className={classes.globeContainer}>
@@ -90,35 +92,7 @@ const AllCountries = () => {
       </div>
       <div className={classes.contentContainer}>
         <div className={classes.headerItem}>
-          <div className={classes.searchContainer}>
-            <TextField
-              label="Search for a country"
-              variant="outlined"
-              fullWidth
-              value={searchQuery}
-              onChange={handleSearchChange}
-              sx={{
-                '.MuiOutlinedInput-root': {
-                  height: '3rem',
-                  width: '25rem'
-                },
-              }}
-            />
-            {showSuggestions && (
-              <Paper className={classes.suggestions}>
-                <List>
-                  {filteredCountries.map((country: any) => (
-                    <ListItem key={country.name} onClick={() => getCountryByName(country.name, true)}>
-                      <ListItemText primary={country.name} />
-                    </ListItem>
-                  ))}
-                  <ListItem className={classes.viewAllBtn} onClick={() => handleViewAll(searchQuery, false)}>
-                    <ListItemText primary="View All" />
-                  </ListItem>
-                </List>
-              </Paper>
-            )}
-          </div>
+          <Search/>
           <FilterModal />
         </div>
         <div>
@@ -128,61 +102,53 @@ const AllCountries = () => {
             <p>Error: {error}</p>
           ) : (
             <div>
-              <h2>All Countries</h2>
-              <div className={classes.content}>
-              <div className={classes.listContainer}>
-                {countries.length > 0 && (countries?.map((country: any) => (
-                  <Card sx={{
-                    width: 310,   
-                    marginBottom: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                  }} key={country.name}>
-                    <Link to={`/country/${country.name}`} style={{ textDecoration: 'none' }}>
-                      <CardContent>
-                        <CardActions>
-                          <img className={classes.flag} src={`https://flagcdn.com/${country.alpha2Code.toLowerCase()}.svg`} alt="flag" />
-                          <Typography gutterBottom variant="h5" component="div">
-                            {country.name}
-                          </Typography>
-                        </CardActions>
-                        <Container>
-                        <Typography variant="body2" color="text.secondary" >
-                          Capital: {country.capital}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Region: {country.region}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Domain: {country.topLevelDomain}
-                        </Typography>
-                        </Container>
-
-                      </CardContent>
-                    </Link>
-                  </Card>
-                )))}
-              </div>
-              <div>
-                {favorites.length > 0 && (
-                  <Box
-                    width="200px"
-                    bgcolor="#f7f9fd"
-                    padding={2}
-                    height="100vh"
+              <div className={classes.header}>
+                <h2>All Countries</h2>
+                <div className={classes.pagination}>
+                  <Button
+                    sx={{
+                      height: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                    }}
+                    onClick={handlePreviousPage}
+                    variant="outlined"
+                    disabled={currentPage === 1}
+                    startIcon={<ArrowBackIosIcon />}
                   >
-                    <Typography variant="h6">Favorite Countries {favorites.length}</Typography>
-                    <List>
-                      {favorites.map((countryName) => (
-                        <ListItem key={countryName}>
-                          <Typography>{countryName}</Typography>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                )}
+                    Prev
+                  </Button>
+                  <Typography>{`Page ${currentPage} of ${totalPages}`}</Typography>
+                  <Button
+                    sx={{
+                      height: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
+                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                    }}
+                    onClick={handleNextPage}
+                    variant="outlined"
+                    disabled={currentPage === totalPages}
+                    endIcon={<ArrowForwardIosIcon />}
+                  >
+                    Next
+                  </Button>
+                </div>
+                {
+                  matchesSmallScreen && favorites.length > 0 && (
+                    <Favorites favorites={favorites}/>
+                  )
+                }
               </div>
+              <div className={classes.content}>
+                <div className={classes.listContainer}>
+                  {currentCountries.length > 0 && (currentCountries?.map((country: any) => (
+                    <CountryCard name={country.name} capital={country.capital} region={country.region}  domain={country.topLevelDomain} countryItem={country}/>
+                    
+                  )))}
+                </div>
+                {
+                  !matchesSmallScreen && favorites.length > 0 && (
+                    <Favorites favorites={favorites}/>
+                  )
+                }
               </div>
             </div>
           )}
