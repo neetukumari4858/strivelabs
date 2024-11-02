@@ -67,7 +67,7 @@ const CountryDetails = () => {
 
   useEffect(() => {
     getCountryByName(countryName, true)
-  }, [countryName]);
+  }, [countryName,getCountryByName]);
 
   const backTohome = () => {
     navigate('/')

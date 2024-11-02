@@ -57,7 +57,7 @@ const AllCountries = () => {
     if (savedFavorites) {
       setFavorites(JSON.parse(savedFavorites));
     }
-  }, []);
+  }, [getAllCountries]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
