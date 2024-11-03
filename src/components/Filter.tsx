@@ -1,27 +1,31 @@
 import { Button, TextField, Typography, Box, Modal } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
-import { useGetApis } from "../customHook/useGetApis";
+import { FilterType } from "../types/counteriesTypes";
+import CloseIcon from '@mui/icons-material/Close';
 
 const modalStyle = {
   position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: '90%', // Responsive width
-  maxWidth: 400, // Set max width for larger screens
+  width: '90%',
+  maxWidth: 400,
   bgcolor: 'background.paper',
   boxShadow: 24,
-  p: { xs: 2, md: 4 }, // Responsive padding
+  p: { xs: 2, md: 4 },
   display: 'flex',
   flexDirection: 'column',
 };
-const FilterModal = () => {
+
+const FilterModal = (props: FilterType) => {
+  const { handleFetchData, filter, setFilter, getAllCountries } = props;
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const { handleFetchData, filter, setFilter } = useGetApis()
-
+  const clearFilterHandler = () => {
+    setFilter({ language: '', region: '' })
+    getAllCountries()
+  }
   return (
     <div>
       <Button variant="contained" sx={(theme) => ({
@@ -73,7 +77,7 @@ const FilterModal = () => {
             <Button variant="contained" color="primary" onClick={() => handleFetchData(handleClose)} sx={{ mt: 2 }}>
               Apply
             </Button>
-            <Button variant="contained" color="primary" onClick={() => setFilter({ language: '', region: '' })} sx={{ mt: 2 }}>
+            <Button variant="contained" color="primary" onClick={clearFilterHandler} sx={{ mt: 2 }}>
               Clear
             </Button>
           </Box>

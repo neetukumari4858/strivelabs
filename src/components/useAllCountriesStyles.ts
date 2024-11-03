@@ -8,8 +8,8 @@ const useAllCountriesStyles = makeStyles((theme: Theme) => ({
       height: 35,
       width: 40,
       [theme.breakpoints.up('md')]: {
-        height: 55,
-        width: 60,
+        height: 45,
+        width: 50,
       },
       backgroundColor: "black"
     },

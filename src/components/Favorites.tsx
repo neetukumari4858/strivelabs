@@ -1,6 +1,7 @@
 import { Box, Typography, List, ListItem } from '@mui/material';
+import { FavoritesType } from "../types/counteriesTypes";
 
-const Favorites = (props: any) => {
+const Favorites = (props: FavoritesType) => {
     const { favorites } = props;
     return (
         <div>
@@ -13,7 +14,7 @@ const Favorites = (props: any) => {
                 >
                     <Typography variant="h6">Favorite Countries {favorites.length}</Typography>
                     <List>
-                        {favorites.map((countryName: any) => (
+                        {favorites.map((countryName: string) => (
                             <ListItem key={countryName}>
                                 <Typography>{countryName}</Typography>
                             </ListItem>

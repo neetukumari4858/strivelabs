@@ -89,43 +89,54 @@ export const useGetApis = () => {
     getViewAll(searchQuery)
   };
 
-  const getCountryByLanguage = async () => {
-    const langCode = languageCodes[filter.language.toLowerCase()];
-    if (!langCode) return;
-    try {
-      const response = await fetch(`${apiUrl}/lang/${langCode}?access_key=${API_KEY}`);
-      if (!response.ok) throw new Error('Country not found');
-      const data = await response.json();
-      setCountries(data);
-    } catch (error: any) {
-      console.error('Error fetching language data:', error);
-      setError(error.type);
-    }
-  }
+  const handleFetchData = async (handleClose: () => void) => {
+    let languageFilteredCountries: any[] = [];
+    let regionFilteredCountries: any[] = [];
 
-  const getCountryByRegion = async () => {
-    try {
-      if (!filter.region) return;
-      const response = await fetch(`${apiUrl}/region/${filter.region}?access_key=${API_KEY}`);
-      if (!response.ok) {
-        throw new Error('Country not found!');
-      }
-      const data = await response.json();
-      setCountries(data);
-    } catch (error: any) {
-      console.error('Error fetching data', error);
-      setError(error.type);
-    }
-  }
-
-  const handleFetchData = (handleClose: any) => {
     if (filter.language) {
-      getCountryByLanguage();
+      const langCode = languageCodes[filter.language.toLowerCase()];
+      if (langCode) {
+        try {
+          const response = await fetch(`${apiUrl}/lang/${langCode}?access_key=${API_KEY}`);
+          if (response.ok) {
+            languageFilteredCountries = await response.json();
+          } else {
+            throw new Error('Language filter failed');
+          }
+        } catch (error: any) {
+          console.error('Error fetching language data:', error);
+          setError(error.type);
+        }
+      }
     }
+
     if (filter.region) {
-      getCountryByRegion()
+      try {
+        const response = await fetch(`${apiUrl}/region/${filter.region}?access_key=${API_KEY}`);
+        if (response.ok) {
+          regionFilteredCountries = await response.json();
+        } else {
+          throw new Error('Region filter failed');
+        }
+      } catch (error: any) {
+        console.error('Error fetching region data:', error);
+        setError(error.type);
+      }
     }
-    handleClose()
-  }
+
+    let finalFilteredCountries = [];
+    if (languageFilteredCountries.length && regionFilteredCountries.length) {
+      const languageCountryNames = languageFilteredCountries.map((country: any) => country.region);
+      finalFilteredCountries = regionFilteredCountries.filter((country: any) =>
+        languageCountryNames.includes(country.region)
+      );
+    } else {
+      finalFilteredCountries = [...languageFilteredCountries, ...regionFilteredCountries];
+    }
+
+    setCountries(finalFilteredCountries);
+    handleClose();
+  };
+
   return { getAllCountries, handleSearchChange, filter, getCountryByName, getViewAll, handleViewAll, handleFetchData, countries, filteredCountries, searchQuery, isLoading, error, showSuggestions, setFilter }
 }

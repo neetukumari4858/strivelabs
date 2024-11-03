@@ -1,17 +1,19 @@
 import { Card, CardActions, CardContent, Typography } from '@mui/material';
 import { Link, } from "react-router-dom";
+import { CardType } from '../types/counteriesTypes';
 import useAllCountriesStyles from './useAllCountriesStyles';
 
-const CountryCard = (props: any) => {
+const CountryCard = (props: CardType) => {
     const { name, capital, region, domain, countryItem } = props;
     const classes = useAllCountriesStyles();
+
     return (
         <Card sx={(theme) => ({
             width: 250,
             height: 200,
             [theme.breakpoints.up('md')]: {
-                width: 345,
-                height: 300,
+                width: 250,
+                height: 270,
             },
             marginBottom: 2,
             display: 'flex',
@@ -22,18 +24,18 @@ const CountryCard = (props: any) => {
                 <CardContent className={classes.cardInfo}>
                     <CardActions sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                         <img className={classes.flag} src={`https://flagcdn.com/${countryItem.alpha2Code.toLowerCase()}.svg`} alt="flag" />
-                        <Typography gutterBottom variant="h5" component="div">
+                        <Typography gutterBottom variant="h5"  component="div">
                             {name}
                         </Typography>
                     </CardActions>
                     <div className={classes.cardContent}>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.3rem' } }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
                             Capital: {capital}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.3rem' } }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
                             Region: {region}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1.3rem' } }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
                             Domain: {domain}
                         </Typography>
                     </div>

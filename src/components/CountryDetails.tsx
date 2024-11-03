@@ -52,7 +52,7 @@ const CountryDetails = () => {
   const navigate = useNavigate()
   const { getCountryByName, countries, isLoading, error } = useGetApis()
 
-  const toggleFavorite = (countryName: any) => {
+  const toggleFavorite = (countryName: string | undefined) => {
     let updatedFavorites = [...favorites];
     if (favorites.includes(countryName)) {
       updatedFavorites = updatedFavorites.filter((name) => name !== countryName);

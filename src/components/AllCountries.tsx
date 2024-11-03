@@ -8,15 +8,16 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import useAllCountriesStyles from './useAllCountriesStyles';
+import debounce from 'lodash.debounce';
 
 const AllCountries = () => {
-  const { getAllCountries, filter, setFilter, countries = [], isLoading, error } = useGetApis();
   const [favorites, setFavorites] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
   const location = useLocation();
   const classes = useAllCountriesStyles();
   const theme = useTheme();
+  const { getAllCountries, filter, setFilter, countries, isLoading, error, getCountryByName, handleViewAll, handleSearchChange, filteredCountries, showSuggestions, searchQuery, handleFetchData } = useGetApis();
 
   const itemsPerPage = 20;
   const currentCountries = Array.isArray(countries) ? countries.slice(0, currentPage * itemsPerPage) : [];
@@ -34,21 +35,28 @@ const AllCountries = () => {
       setCurrentPage((prev) => prev - 1);
     }
   };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleScroll = useCallback(
+    debounce(() => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 50 &&
+        !isLoading &&
+        currentPage < totalPages
+      ) {
+        setCurrentPage((prevPage) => prevPage + 1);
+      }
+    }, 300), // Delay scroll event handling by 300ms
+    [isLoading, currentPage, totalPages]
+  );
 
-  const handleScroll = useCallback(() => {
-    if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 50 && !isLoading) {
-      setCurrentPage((prevPage) => prevPage + 1);
-    }
-  }, [isLoading]);
-
-
-  const updateUrlParams = useCallback(() => {
+  useEffect(() => {
     const params = new URLSearchParams();
     if (filter.language) params.set("language", filter.language);
     if (filter.region) params.set("region", filter.region);
     params.set("page", String(currentPage));
     navigate({ search: params.toString() }, { replace: true });
-  }, [filter, currentPage, navigate]);
+  }, [filter.language, filter.region, currentPage, navigate]);
 
 
   useEffect(() => {
@@ -57,7 +65,8 @@ const AllCountries = () => {
     if (savedFavorites) {
       setFavorites(JSON.parse(savedFavorites));
     }
-  }, [getAllCountries]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -77,10 +86,6 @@ const AllCountries = () => {
   }, [location.search, setFilter]);
 
   useEffect(() => {
-    updateUrlParams();
-  }, [filter, currentPage, updateUrlParams]);
-
-  useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
@@ -93,8 +98,19 @@ const AllCountries = () => {
       </div>
       <div className={classes.contentContainer}>
         <div className={classes.headerItem}>
-          <Search />
-          <FilterModal />
+          <Search
+            getCountryByName={getCountryByName}
+            handleViewAll={handleViewAll}
+            handleSearchChange={handleSearchChange}
+            filteredCountries={filteredCountries}
+            showSuggestions={showSuggestions}
+            searchQuery={searchQuery}
+          />
+          <FilterModal handleFetchData={handleFetchData}
+            filter={filter}
+            setFilter={setFilter}
+            getAllCountries={getAllCountries}
+          />
         </div>
         <div>
           {isLoading ? (
@@ -140,10 +156,22 @@ const AllCountries = () => {
               </div>
               <div className={classes.content}>
                 <div className={classes.listContainer}>
-                  {currentCountries.length > 0 && (currentCountries?.map((country: any) => (
-                    <CountryCard name={country.name} capital={country.capital} region={country.region} domain={country.topLevelDomain} countryItem={country} />
-
-                  )))}
+                  {currentCountries.length > 0 ? (
+                    currentCountries.map((country: any) => (
+                      <CountryCard
+                        key={country.name}
+                        name={country.name}
+                        capital={country.capital}
+                        region={country.region}
+                        domain={country.topLevelDomain}
+                        countryItem={country}
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="h6">
+                      No countries found. Please adjust your search or filter criteria.
+                    </Typography>
+                  )}
                 </div>
                 {
                   !matchesSmallScreen && favorites.length > 0 && (

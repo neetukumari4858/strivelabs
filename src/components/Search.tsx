@@ -1,9 +1,9 @@
 import { TextField, List, ListItem, ListItemText, Paper } from '@mui/material';
-import { useGetApis } from "../customHook/useGetApis"
 import useAllCountriesStyles from './useAllCountriesStyles';
+import {SearchProps} from "../types/counteriesTypes"
 
-const Search = () => {
-    const { handleSearchChange, getCountryByName, handleViewAll, filteredCountries, searchQuery, showSuggestions } = useGetApis();
+const Search: React.FC<SearchProps> = (props) => {
+    const { getCountryByName, handleViewAll, handleSearchChange, filteredCountries, showSuggestions, searchQuery } = props
     const classes = useAllCountriesStyles();
 
     return (
@@ -23,11 +23,15 @@ const Search = () => {
             {showSuggestions && (
                 <Paper className={classes.suggestions}>
                     <List>
-                        {filteredCountries.map((country: any) => (
-                            <ListItem key={country.name} onClick={() => getCountryByName(country.name, true)} sx={{ cursor: "pointer" }}>
-                                <ListItemText primary={country.name} />
-                            </ListItem>
-                        ))}
+                        {
+                            filteredCountries.length > 0 ? (filteredCountries.map((country: any) => (
+                                <ListItem key={country.name} onClick={() => getCountryByName(country.name, true)} sx={{ cursor: "pointer" }}>
+                                    <ListItemText primary={country.name} />
+                                </ListItem>
+                            ))) : (<ListItem>
+                                <ListItemText primary="Country Not Found " />
+                            </ListItem>)
+                        }
                         <ListItem className={classes.viewAllBtn} onClick={() => handleViewAll(searchQuery, false)}>
                             <ListItemText primary="View All" />
                         </ListItem>
