@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Button, Typography } from '@mui/material';
-import { useLocation, useNavigate } from "react-router-dom";
 import { useGetApis } from "../customHook/useGetApis"
 import { useTheme } from '@mui/material/styles';
 import { Search, FilterModal, Favorites, CountryCard } from "./index";
@@ -13,16 +12,14 @@ import debounce from 'lodash.debounce';
 const AllCountries = () => {
   const [favorites, setFavorites] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const navigate = useNavigate();
-  const location = useLocation();
+
   const classes = useAllCountriesStyles();
   const theme = useTheme();
-  const { getAllCountries, filter, setFilter, countries, isLoading, error, getCountryByName, handleViewAll, handleSearchChange, filteredCountries, showSuggestions, searchQuery, handleFetchData } = useGetApis();
-
+  const { getAllCountries, filter, setFilter, regionMenu, populationRanges, setShowSuggestions, viewAll, areaRanges, countries, isLoading, error, getCountryByName, handleViewAll, handleSearchChange, filteredCountries, showSuggestions, searchQuery, handleFetchData } = useGetApis();
   const itemsPerPage = 20;
   const currentCountries = Array.isArray(countries) ? countries.slice(0, currentPage * itemsPerPage) : [];
   const totalPages = Array.isArray(countries) ? Math.ceil(countries.length / itemsPerPage) : 0;
-  const matchesSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchesSmallScreen = useMediaQuery(theme?.breakpoints?.down('sm') || '(max-width:600px)');
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -46,18 +43,9 @@ const AllCountries = () => {
       ) {
         setCurrentPage((prevPage) => prevPage + 1);
       }
-    }, 300), // Delay scroll event handling by 300ms
+    }, 300),
     [isLoading, currentPage, totalPages]
   );
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (filter.language) params.set("language", filter.language);
-    if (filter.region) params.set("region", filter.region);
-    params.set("page", String(currentPage));
-    navigate({ search: params.toString() }, { replace: true });
-  }, [filter.language, filter.region, currentPage, navigate]);
-
 
   useEffect(() => {
     getAllCountries();
@@ -69,23 +57,6 @@ const AllCountries = () => {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const lang = params.get("language");
-    const region = params.get("region");
-    const page = params.get("page");
-
-    if (lang || region) {
-      setFilter({
-        language: lang || "",
-        region: region || ""
-      });
-    }
-    if (page) {
-      setCurrentPage(Number(page));
-    }
-  }, [location.search, setFilter]);
-
-  useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
@@ -94,7 +65,7 @@ const AllCountries = () => {
     <div className={classes.container}>
       <div className={classes.globeContainer}>
         <h1>Country Explorer</h1>
-        <div>Explore the Knowlege by Exploring the World </div>
+        <div>Explore the Knowlege by Exploring the World</div>
       </div>
       <div className={classes.contentContainer}>
         <div className={classes.headerItem}>
@@ -105,11 +76,18 @@ const AllCountries = () => {
             filteredCountries={filteredCountries}
             showSuggestions={showSuggestions}
             searchQuery={searchQuery}
+            viewAll={viewAll}
+            setShowSuggestions={setShowSuggestions}
           />
-          <FilterModal handleFetchData={handleFetchData}
+          <FilterModal
+            handleFetchData={handleFetchData}
             filter={filter}
             setFilter={setFilter}
             getAllCountries={getAllCountries}
+            countries={countries}
+            regionMenu={regionMenu || []}
+            populationRanges={populationRanges || []}
+            areaRanges={areaRanges || []}
           />
         </div>
         <div>
@@ -165,6 +143,8 @@ const AllCountries = () => {
                         region={country.region}
                         domain={country.topLevelDomain}
                         countryItem={country}
+                        area={country.area}
+                        population={country.population}
                       />
                     ))
                   ) : (

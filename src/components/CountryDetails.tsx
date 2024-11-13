@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Typography, Card, Container, CardContent } from "@mui/material";
 import { useGetApis } from "../customHook/useGetApis";
 import { makeStyles } from "@mui/styles";
@@ -50,7 +50,9 @@ const CountryDetails = () => {
   const classes = useStyles()
   const { countryName } = useParams();
   const navigate = useNavigate()
-  const { getCountryByName, countries, isLoading, error } = useGetApis()
+  const location = useLocation();
+  const country = location.state;
+  const { getCountryByName, isLoading, error } = useGetApis()
 
   const toggleFavorite = (countryName: string | undefined) => {
     let updatedFavorites = [...favorites];
@@ -67,11 +69,14 @@ const CountryDetails = () => {
 
   useEffect(() => {
     getCountryByName(countryName, true)
-  }, [countryName,getCountryByName]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countryName]);
 
   const backTohome = () => {
-    navigate('/')
-  }
+    navigate('/');
+  };
+
+
   return (
     <Container className={classes.detailContainer}>
       <div>
@@ -87,34 +92,38 @@ const CountryDetails = () => {
           <p>Error: {error}</p>
         ) : (
           <>
-            {countries?.map((countryInfo: any) => (
-              <Card>
-                <CardContent>
-                  <Container key={countryInfo.name} className={classes.content}>
-                    <Typography variant="h6" sx={{ mt: 1 }}>
-                      Country: {countryInfo.name}
-                    </Typography>
-                    <Typography variant="h6" sx={{ mt: 1 }} >
-                      Capital:  {countryInfo.capital}
-                    </Typography>
-                    <Typography variant="h6" sx={{ mt: 1 }} >
-                      Region : {countryInfo.region}
-                    </Typography>
-                    <Typography variant="h6" sx={{ mt: 1 }} >
-                      Domain : {countryInfo.topLevelDomain}
-                    </Typography>
-                    <Typography variant="h6" sx={{ mt: 1 }} >
-                      Favorites : {<Fab size="small" aria-label="like" onClick={() => toggleFavorite(countryName)}>
-                        {isFavorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
-                      </Fab>}
-                    </Typography>
-                    <Typography variant="h6" sx={{ mt: 1 }} >
-                      If you Like while Exploring this Country then Hit the Favorite Button...
-                    </Typography>
-                  </Container>
-                </CardContent>
-              </Card>
-            ))}
+            <Card>
+              <CardContent>
+                <Container key={country.name} className={classes.content}>
+                  <Typography variant="h6" sx={{ mt: 1 }}>
+                    Country: {country.name}
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1 }} >
+                    Capital:  {country.capital}
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1 }} >
+                    Region : {country.region}
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1 }} >
+                    Population : {country.population}
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1 }} >
+                    Area : {country.area}
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1 }} >
+                    Domain : {country.topLevelDomain}
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1 }} >
+                    Favorites : {<Fab size="small" aria-label="like" onClick={() => toggleFavorite(countryName)}>
+                      {isFavorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+                    </Fab>}
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 1 }} >
+                    If you Like while Exploring this Country then Hit the Favorite Button...
+                  </Typography>
+                </Container>
+              </CardContent>
+            </Card>
           </>
         )}
       </div>

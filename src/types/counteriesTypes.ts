@@ -1,5 +1,5 @@
 export interface CardType {
-    name: string, capital: string, region: string, domain: string, countryItem: any
+    name: string, capital: string, region: string, domain: string, countryItem: any, area: string, population: string
 }
 export interface FavoritesType {
     favorites: string[]
@@ -7,12 +7,19 @@ export interface FavoritesType {
 interface Filter {
     language: string;
     region: string;
+    population: string,
+    area: string
+
 }
 export interface FilterType {
-    handleFetchData: (handleClose: () => void) => Promise<void>;
+    handleFetchData: any;
     filter: Filter;
     setFilter: React.Dispatch<React.SetStateAction<Filter>>;
     getAllCountries: () => Promise<void>;
+    countries: any;
+    regionMenu: string[];
+    populationRanges: string[];
+    areaRanges: string[];
 }
 interface Country {
     name: string;
@@ -24,4 +31,6 @@ export interface SearchProps {
     filteredCountries: Country[];
     showSuggestions: boolean;
     searchQuery: string;
+    viewAll: boolean;
+    setShowSuggestions: any;
 }
