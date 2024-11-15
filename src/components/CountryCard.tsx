@@ -30,19 +30,19 @@ const CountryCard = (props: CardType) => {
                     </CardActions>
                     <div className={classes.cardContent}>
                         <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
-                            Capital: {capital}
+                            Capital: { capital ? capital : 'N/A'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
-                            Region: {region}
+                            Region: {region ? region : 'N/A'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
-                            Domain: {domain}
+                            Domain: {domain ? domain : 'N/A'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
-                            Population: {population}
+                            Population: {population ? population : 'N/A'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' } }}>
-                            Area: {area}
+                            Area: {area ? area : 'N/A'}
                         </Typography>
                     </div>
                 </CardContent>

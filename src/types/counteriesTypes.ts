@@ -9,17 +9,16 @@ interface Filter {
     region: string;
     population: string,
     area: string
-
 }
 export interface FilterType {
     handleFetchData: any;
     filter: Filter;
     setFilter: React.Dispatch<React.SetStateAction<Filter>>;
     getAllCountries: () => Promise<void>;
-    countries: any;
     regionMenu: string[];
     populationRanges: string[];
     areaRanges: string[];
+    languageMenu:string[];
 }
 interface Country {
     name: string;

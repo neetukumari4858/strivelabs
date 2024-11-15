@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { apiUrl, API_KEY } from '../utils/apis'
-import { countryLanguageMapping } from "../utils/apis"
+import { apiUrl, API_KEY, languageUrl, worldBankDataUrl } from '../utils/apis'
 
 export const useGetApis = () => {
   const [countries, setCountries] = useState<any[]>([]);
@@ -12,7 +11,9 @@ export const useGetApis = () => {
   const [regionMenu, setRegionMenu] = useState<string[]>([]);
   const [populationRanges, setPopulationRanges] = useState<string[]>([]);
   const [areaRanges, setAreaRanges] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
   const [viewAll, setViewAll] = useState(false);
+  const [allCountries, setAllCountries] = useState<any[]>([]);
   const [filter, setFilter] = useState({
     language: '',
     region: '',
@@ -23,10 +24,9 @@ export const useGetApis = () => {
     let data: any[] = [];
     let page = 1;
     let totalPages = 1;
-
     try {
       while (page <= totalPages) {
-        const response = await fetch(`https://api.worldbank.org/v2/country/all/indicator/${indicator}?format=json&date=2021&page=${page}`);
+        const response = await fetch(`${worldBankDataUrl}country/all/indicator/${indicator}?format=json&date=2021&page=${page}`);
         if (!response.ok) throw new Error(`Failed to fetch World Bank data for ${indicator}`);
         const result = await response.json();
 
@@ -44,11 +44,42 @@ export const useGetApis = () => {
     }
     return data;
   };
+  const fetchLanguages = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${languageUrl}all`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch countries data');
+      }
+      const countryData = await response.json();
+      const formattedCountries = countryData.map((country: any) => {
+        return {
+          name: country.name.common,
+          languages: country.languages ? Object.values(country.languages) : [],
+        };
+      });
+      const allLanguages = formattedCountries
+        .flatMap((country: any) => country.languages)
+        .filter((lang: string) => lang)
+        .reduce((acc: string[], lang: string) => {
+          if (!acc.includes(lang)) acc.push(lang);
+          return acc;
+        }, []);
+      setLanguages(allLanguages);
+      return formattedCountries
+    } catch (err) {
+      console.error("Error fetching countries:", err);
+      setError("Failed to fetch countries data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const getAllCountries = async () => {
     setIsLoading(true);
     setError(null);
-
     try {
       // Fetch Country Layer API data
       const apiResponse = await fetch(`${apiUrl}/all?access_key=${API_KEY}`);
@@ -56,11 +87,13 @@ export const useGetApis = () => {
         throw new Error(`Country Layer API error : ${apiResponse.statusText}`);
       }
       const apiCountries = await apiResponse.json();
+
       if (!Array.isArray(apiCountries)) {
         throw new Error('API did not return an array of countries');
       }
       const populationData = await fetchWorldBankData("SP.POP.TOTL");
       const areaData = await fetchWorldBankData("AG.LND.TOTL.K2");
+      const languageData = await fetchLanguages();
       // Merge the data
       const mergedCountries = apiCountries.map((apiCountry: { name: string; region: string }) => {
         const normalizedName = apiCountry.name.toLowerCase().trim();
@@ -70,15 +103,16 @@ export const useGetApis = () => {
         const areaMatch = areaData.find((areaCountry: { country: { value: string } }) =>
           areaCountry.country.value.toLowerCase().trim() === normalizedName
         );
-        const languages = countryLanguageMapping[apiCountry.name] || [];
+        const lang = languageData.find((country: any) => country.name === apiCountry.name)
         return {
           ...apiCountry,
-          population: populationMatch ? populationMatch.value : 'N/A',
-          area: areaMatch ? areaMatch.value : 'N/A',
-          languages,
+          population: populationMatch && populationMatch.value,
+          area: areaMatch && areaMatch.value,
+          languages: lang && lang.languages,
         };
       });
       setCountries(mergedCountries);
+      setAllCountries(mergedCountries)
       // Extract unique regions, populations, and areas
       const uniqueRegions: any = Array.from(new Set(mergedCountries.map((country: any) => country.region))).filter(Boolean);
       setRegionMenu(uniqueRegions);
@@ -94,19 +128,18 @@ export const useGetApis = () => {
     }
   };
 
-
   const handleSearchChange = (e: any) => {
     const query = e.target.value;
     setSearchQuery(query);
     if (query) {
       const matches: any = countries.filter((country: any) =>
         country?.name.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 5);
+      );
       if (matches.length > 5) {
         setViewAll(true)
       }
-      const matchesFiveCountry = matches.slice(0, 5);
-      setFilteredCountries(matchesFiveCountry);
+      setFilteredCountries(matches);
+      setCountries(matches.slice(0, 5))
       setShowSuggestions(true);
     } else {
       setFilteredCountries([]);
@@ -133,25 +166,16 @@ export const useGetApis = () => {
     }
   };
 
-  const getViewAll = async (countryName: string) => {
-    const matches: any = countries.filter((country: any) =>
-      country?.name.toLowerCase().includes(countryName.toLowerCase())
-    );
-    setCountries(matches);
-    setShowSuggestions(true);
-    handleFetchData();
-    setViewAll(false)
-  };
-
-  const handleViewAll = (searchQuery: string) => {
-    getViewAll(searchQuery)
+  const handleViewAll = () => {
+    setCountries(filteredCountries)
+    setShowSuggestions(false)
   };
 
   const handleFetchData = async (handleClose?: () => void | undefined) => {
-    const filteredData = countries.filter((country) => {
+    const filteredData = allCountries.filter((country) => {
       const matchesSearch = searchQuery ? country.name.toLowerCase().includes(searchQuery.toLowerCase()) : true;
       const matchesLanguage = filter.language
-        ? country.languages?.some((lang: string) => lang.toLowerCase() === filter.language.toLowerCase())
+        ? country.languages?.some((lang: string) => lang === filter.language)
         : true;
       const matchesRegion = filter.region ? country.region === filter.region : true;
       const matchesPopulation = filter.population ? country.population === parseInt(filter.population) : true;
@@ -162,5 +186,5 @@ export const useGetApis = () => {
     if (handleClose) handleClose();
   };
 
-  return { getAllCountries, handleSearchChange, setShowSuggestions, setSearchQuery, viewAll, regionMenu, populationRanges, areaRanges, getCountryByName, getViewAll, handleViewAll, handleFetchData, countries, filteredCountries, searchQuery, isLoading, error, showSuggestions, filter, setFilter }
+  return { getAllCountries, handleSearchChange, languages, allCountries, setShowSuggestions, setSearchQuery, viewAll, regionMenu, populationRanges, areaRanges, getCountryByName, handleViewAll, handleFetchData, countries, filteredCountries, searchQuery, isLoading, error, showSuggestions, filter, setFilter }
 }

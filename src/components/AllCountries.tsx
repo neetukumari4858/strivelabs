@@ -1,10 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Button, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useGetApis } from "../customHook/useGetApis"
 import { useTheme } from '@mui/material/styles';
 import { Search, FilterModal, Favorites, CountryCard } from "./index";
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import useAllCountriesStyles from './useAllCountriesStyles';
 import debounce from 'lodash.debounce';
@@ -12,26 +10,14 @@ import debounce from 'lodash.debounce';
 const AllCountries = () => {
   const [favorites, setFavorites] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-
   const classes = useAllCountriesStyles();
   const theme = useTheme();
-  const { getAllCountries, filter, setFilter, regionMenu, populationRanges, setShowSuggestions, viewAll, areaRanges, countries, isLoading, error, getCountryByName, handleViewAll, handleSearchChange, filteredCountries, showSuggestions, searchQuery, handleFetchData } = useGetApis();
+  const { getAllCountries, filter, setFilter, languages, regionMenu, populationRanges, setShowSuggestions, viewAll, areaRanges, countries, isLoading, error, getCountryByName, handleViewAll, handleSearchChange, filteredCountries, showSuggestions, searchQuery, handleFetchData } = useGetApis();
   const itemsPerPage = 20;
   const currentCountries = Array.isArray(countries) ? countries.slice(0, currentPage * itemsPerPage) : [];
   const totalPages = Array.isArray(countries) ? Math.ceil(countries.length / itemsPerPage) : 0;
   const matchesSmallScreen = useMediaQuery(theme?.breakpoints?.down('sm') || '(max-width:600px)');
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleScroll = useCallback(
     debounce(() => {
@@ -84,10 +70,10 @@ const AllCountries = () => {
             filter={filter}
             setFilter={setFilter}
             getAllCountries={getAllCountries}
-            countries={countries}
             regionMenu={regionMenu || []}
             populationRanges={populationRanges || []}
             areaRanges={areaRanges || []}
+            languageMenu={languages || []}
           />
         </div>
         <div>
@@ -100,31 +86,7 @@ const AllCountries = () => {
               <div className={classes.header}>
                 <h2>All Countries</h2>
                 <div className={classes.pagination}>
-                  <Button
-                    sx={{
-                      height: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
-                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                    }}
-                    onClick={handlePreviousPage}
-                    variant="outlined"
-                    disabled={currentPage === 1}
-                    startIcon={<ArrowBackIosIcon />}
-                  >
-                    Prev
-                  </Button>
                   <Typography>{`Page ${currentPage} of ${totalPages}`}</Typography>
-                  <Button
-                    sx={{
-                      height: { xs: '1.8rem', sm: '2.2rem', md: '2.8rem' },
-                      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
-                    }}
-                    onClick={handleNextPage}
-                    variant="outlined"
-                    disabled={currentPage === totalPages}
-                    endIcon={<ArrowForwardIosIcon />}
-                  >
-                    Next
-                  </Button>
                 </div>
                 {
                   matchesSmallScreen && favorites.length > 0 && (

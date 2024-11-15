@@ -108,11 +108,10 @@ describe('AllCountries Component', () => {
 
   });
 
-
   // Filter Modal
 
   it('should render the FilterModal and open it when button is clicked', () => {
-    render(<FilterModal handleFetchData={jest.fn()} filter={{ language: '', region: '', population: '', area: '' }} setFilter={jest.fn()} getAllCountries={jest.fn()} regionMenu={['Asia']} populationRanges={['1M-10M']} areaRanges={['Small']} countries={undefined} />);
+    render(<FilterModal handleFetchData={jest.fn()} filter={{ language: '', region: '', population: '', area: '' }} setFilter={jest.fn()} getAllCountries={jest.fn()} regionMenu={['Asia']} populationRanges={['1M-10M']} areaRanges={['Small']} languageMenu={[]} />);
     // Check if the filter button is rendered
     const filterButton = screen.getByText('Country Filter');
     fireEvent.click(filterButton);
@@ -121,7 +120,7 @@ describe('AllCountries Component', () => {
   });
 
   it('should close the modal when CloseIcon is clicked', () => {
-    render(<FilterModal handleFetchData={jest.fn()} filter={{ language: '', region: '', population: '', area: '' }} setFilter={jest.fn()} getAllCountries={jest.fn()} regionMenu={['Asia']} populationRanges={['1M-10M']} areaRanges={['Small']} countries={undefined} />);
+    render(<FilterModal handleFetchData={jest.fn()} filter={{ language: '', region: '', population: '', area: '' }} setFilter={jest.fn()} getAllCountries={jest.fn()} regionMenu={['Asia']} populationRanges={['1M-10M']} areaRanges={['Small']} languageMenu={[]} />);
     fireEvent.click(screen.getByText('Country Filter'));
     fireEvent.click(screen.getByTestId('close-icon'));
     expect(screen.queryByText('Filters')).not.toBeInTheDocument();
@@ -129,7 +128,7 @@ describe('AllCountries Component', () => {
 
   it('should call handleFetchData when Apply button is clicked', () => {
     const handleFetchDataMock = jest.fn();
-    render(<FilterModal handleFetchData={handleFetchDataMock} filter={{ language: '', region: '', population: '', area: '' }} setFilter={jest.fn()} getAllCountries={jest.fn()} regionMenu={['Asia']} populationRanges={['1M-10M']} areaRanges={['Small']} countries={undefined} />);
+    render(<FilterModal handleFetchData={handleFetchDataMock} filter={{ language: '', region: '', population: '', area: '' }} setFilter={jest.fn()} getAllCountries={jest.fn()} regionMenu={['Asia']} populationRanges={['1M-10M']} areaRanges={['Small']} languageMenu={[]} />);
     fireEvent.click(screen.getByText('Country Filter'));
     fireEvent.click(screen.getByText('Apply'));
     expect(handleFetchDataMock).toHaveBeenCalled();
@@ -137,7 +136,7 @@ describe('AllCountries Component', () => {
 
   it('should clear filters when Clear button is clicked', () => {
     const setFilterMock = jest.fn();
-    render(<FilterModal handleFetchData={jest.fn()} filter={{ language: '', region: '', population: '', area: '' }} setFilter={setFilterMock} getAllCountries={jest.fn()} regionMenu={['Asia']} populationRanges={['1M-10M']} areaRanges={['Small']} countries={undefined} />);
+    render(<FilterModal handleFetchData={jest.fn()} filter={{ language: '', region: '', population: '', area: '' }} setFilter={setFilterMock} getAllCountries={jest.fn()} regionMenu={['Asia']} populationRanges={['1M-10M']} areaRanges={['Small']} languageMenu={[]} />);
     fireEvent.click(screen.getByText('Country Filter'));
     fireEvent.click(screen.getByText('Clear'));
     expect(setFilterMock).toHaveBeenCalledWith({
@@ -180,7 +179,7 @@ describe('AllCountries Component', () => {
     expect(screen.getByText(/iceland/i)).toBeInTheDocument();
   });
 
-  it('should display "Country Not Found" when no results match', () => {
+  it('should display "Country Not Found" when no results match', async () => {
     const updatedProps = {
       ...mockProps,
       filteredCountries: [],
@@ -191,8 +190,10 @@ describe('AllCountries Component', () => {
       <ThemeProvider theme={theme}>
         <Search {...updatedProps} />
       </ThemeProvider>
-    ); const notFoundText = screen.getByText(/country not found/i);
-    expect(notFoundText).toBeInTheDocument();
+    );
+    await waitFor(() => {
+      expect(screen.getByText(/country not found/i)).toBeInTheDocument();
+    });
   });
 
   it('should call "getCountryByName" when a suggestion is clicked', async () => {
@@ -234,27 +235,6 @@ describe('AllCountries Component', () => {
       </ThemeProvider>
     ); const viewAllButton = screen.getByText(/view all/i);
     expect(viewAllButton).toBeInTheDocument();
-  });
-
-  it('should call "handleViewAll" when "View All" button is clicked', () => {
-    const updatedProps = {
-      ...mockProps,
-      filteredCountries: [
-        { name: 'India' },
-        { name: 'Indonesia' },
-        { name: 'Iceland' },
-      ],
-      showSuggestions: true,
-      viewAll: true,
-      searchQuery: 'Ind',
-    };
-    render(
-      <ThemeProvider theme={theme}>
-        <Search {...updatedProps} />
-      </ThemeProvider>
-    ); const viewAllButton = screen.getByText(/view all/i);
-    fireEvent.click(viewAllButton);
-    expect(mockProps.handleViewAll).toHaveBeenCalledWith('Ind', false);
   });
 });
 

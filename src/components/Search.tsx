@@ -27,15 +27,15 @@ const Search: React.FC<SearchProps> = (props) => {
                         {
                             filteredCountries.length > 0 ? (<>
                                 {
-                                    filteredCountries.map((country: any) => (
+                                    filteredCountries.slice(0, 5).map((country: any) => (
                                         <ListItem key={country.name} onClick={() => getCountryByName(country.name, true)} sx={{ cursor: "pointer" }}>
                                             <ListItemText primary={country.name} />
                                         </ListItem>
                                     ))
                                 }
-                                {viewAll && <ListItem className={classes.viewAllBtn} onClick={() => handleViewAll(searchQuery, false)}>
+                                {filteredCountries.length >= 5 ? (viewAll && <ListItem className={classes.viewAllBtn} onClick={() => handleViewAll(searchQuery, false)}>
                                     <ListItemText primary="View All" />
-                                </ListItem>}
+                                </ListItem>) : ''}
                             </>
                             ) : (<ListItem>
                                 <ListItemText primary="Country Not Found " />

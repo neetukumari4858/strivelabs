@@ -7,17 +7,6 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
-const languageMapping: Record<string, string> = {
-  en: "English",
-  hi: "Hindi",
-  es: "Spanish",
-  fr: "French",
-  de: "Germany",
-  pt: "Brazil",
-  zh: "Chine",
-  ja: "Japan"
-};
-
 const modalStyle = {
   position: 'absolute',
   top: '50%',
@@ -34,7 +23,7 @@ const modalStyle = {
 
 const FilterModal = (props: FilterType) => {
   const { handleFetchData, filter, setFilter, getAllCountries, regionMenu, populationRanges,
-    areaRanges } = props;
+    areaRanges, languageMenu } = props;
   const { setSearchQuery } = useGetApis()
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -45,7 +34,6 @@ const FilterModal = (props: FilterType) => {
     setFilter(resetFilter);
     getAllCountries();
     setSearchQuery('')
-
   };
 
   const handleFilterChange = (name: string, value: string) => {
@@ -92,9 +80,9 @@ const FilterModal = (props: FilterType) => {
               }}
             >
               <MenuItem value="" style={{ color: 'gray' }}>Language</MenuItem>
-              {Object.entries(languageMapping).map(([code, name]) => (
-                <MenuItem key={code} value={code}>
-                  {name}
+              {languageMenu.map((lang: string) => (
+                <MenuItem key={lang} value={lang}>
+                  {lang}
                 </MenuItem>
               ))}
             </Select>
